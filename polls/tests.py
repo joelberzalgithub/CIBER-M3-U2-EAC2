@@ -30,18 +30,21 @@ class MySeleniumTests(StaticLiveServerTestCase):
         super().tearDownClass()
 
     def test_user_in_list_but_cannot_login(self):
-        # creem un usuari normal sense permissos
-        user = User.objects.create_user(username="usuari_normal", password="test1234")
-        user.is_superuser = False
-        user.is_staff = False
-        user.save()
-
-        # iniciem sessió com a superusuari per veure la llista d'usuaris
+        # iniciem sessió com a superusuari
         self.selenium.get(f"{self.live_server_url}/admin/login/")
         self.selenium.find_element(By.NAME, "username").send_keys("isard")
         self.selenium.find_element(By.NAME, "password").send_keys("pirineus")
         time.sleep(2)
         self.selenium.find_element(By.XPATH, "//input[@type='submit']").click()
+        time.sleep(2)
+
+        # creem un usuari normal sense permissos
+        self.selenium.get(f"{self.live_server_url}/admin/auth/user/add/")
+        self.selenium.find_element(By.NAME, "username").send_keys("usuari_normal")
+        self.selenium.find_element(By.NAME, "password1").send_keys("test_password_1234")
+        self.selenium.find_element(By.NAME, "password2").send_keys("test_password_1234")
+        time.sleep(2)
+        self.selenium.find_element(By.NAME, "_save").click()
         time.sleep(2)
 
         # anem a la pàgina de llista d'usuaris
@@ -74,7 +77,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
         # intentem iniciar sessió com a usuari normal
         self.selenium.get(f"{self.live_server_url}/admin/login/")
         self.selenium.find_element(By.NAME, "username").send_keys("usuari_normal")
-        self.selenium.find_element(By.NAME, "password").send_keys("test1234")
+        self.selenium.find_element(By.NAME, "password").send_keys("test_password_1234")
         time.sleep(2)
         self.selenium.find_element(By.XPATH, "//input[@type='submit']").click()
         time.sleep(2)
@@ -82,4 +85,3 @@ class MySeleniumTests(StaticLiveServerTestCase):
         # comprovem que no pot accedir (ha de mantenir-se a la pàgina de login amb error)
         error_message = self.selenium.find_element(By.CLASS_NAME, "errornote").text
         assert "Please enter the correct" in error_message, "L'usuari normal ha pogut accedir a l'admin i no hauria de poder"
-
