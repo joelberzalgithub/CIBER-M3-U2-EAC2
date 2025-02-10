@@ -1,3 +1,4 @@
+import time
 from django.test import TestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.contrib.auth.models import User
@@ -23,13 +24,6 @@ class MySeleniumTests(StaticLiveServerTestCase):
         user.is_staff = True
         user.save()
 
-        """
-        cls.selenium.get(f"{cls.live_server_url}/admin/login/")
-        cls.selenium.find_element(By.NAME, "username").send_keys("isard")
-        cls.selenium.find_element(By.NAME, "password").send_keys("pirineus")
-        cls.selenium.find_element(By.XPATH, "//input[@type='submit']").click()
-        """
-
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()
@@ -46,10 +40,13 @@ class MySeleniumTests(StaticLiveServerTestCase):
         self.selenium.get(f"{self.live_server_url}/admin/login/")
         self.selenium.find_element(By.NAME, "username").send_keys("isard")
         self.selenium.find_element(By.NAME, "password").send_keys("pirineus")
+        time.sleep(2)
         self.selenium.find_element(By.XPATH, "//input[@type='submit']").click()
+        time.sleep(2)
 
         # anem a la pàgina de llista d'usuaris
         self.selenium.get(f"{self.live_server_url}/admin/auth/user/")
+        time.sleep(2)
 
         # comprovem que l'usuari creat està a la llista
         user_found = False
@@ -67,29 +64,22 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
         if not user_found:
             print("L'usuari no es troba a la llista d'usuaris")
+        time.sleep(2)
 
         # tanquem la sessió del superusuari
         #self.selenium.get(f"{self.live_server_url}/admin/logout/")
         self.selenium.find_element(By.XPATH, "//button[text()='Log out']").click()
+        time.sleep(2)
 
         # intentem iniciar sessió com a usuari normal
         self.selenium.get(f"{self.live_server_url}/admin/login/")
         self.selenium.find_element(By.NAME, "username").send_keys("usuari_normal")
         self.selenium.find_element(By.NAME, "password").send_keys("test1234")
+        time.sleep(2)
         self.selenium.find_element(By.XPATH, "//input[@type='submit']").click()
+        time.sleep(2)
 
-        """
         # comprovem que no pot accedir (ha de mantenir-se a la pàgina de login amb error)
         error_message = self.selenium.find_element(By.CLASS_NAME, "errornote").text
         assert "Please enter the correct" in error_message, "L'usuari normal ha pogut accedir a l'admin i no hauria de poder"
-        """
 
-    """
-    def test_element_not_present(self):
-        self.selenium.get(f"{self.live_server_url}/admin/")
-        try:
-            self.selenium.find_element(By.XPATH, "//a[text()='Log out']")
-            assert False, "Trobat element que NO hi ha de ser"
-        except NoSuchElementException:
-            pass
-    """
